@@ -19,8 +19,7 @@ router.get("/", async (req,res)=>{
     const fileName = Date.now() + ".mp3";
     const output = path.join(__dirname,"../downloads",fileName);
 
-    const command = `yt-dlp --js-runtimes deno --no-playlist -x --audio-format mp3 -o "${output}" "ytsearch1:${q}"`;
-
+const command = `yt-dlp --js-runtimes deno --extractor-args "youtube:player_client=android" --no-playlist -x --audio-format mp3 -o "${output}" "ytsearch1:${q}"`;
     exec(command,(error)=>{
 
         if(error){
