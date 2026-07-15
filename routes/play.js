@@ -2,49 +2,51 @@ const express = require("express");
 const { exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
+const YoutubeSearchApi = require("youtube-search-api");
 
 const router = express.Router();
 
-router.get("/", async (req,res)=>{
+router.get("/", async (req, res) => {
 
     const q = req.query.q;
 
-    if(!q){
+    if (!q) {
         return res.json({
-            success:false,
-            message:"Use ?q=song name"
+            success: false,
+            message: "Use ?q=song name"
         });
     }
 
-    const fileName = Date.now() + ".mp3";
-    const output = path.join(__dirname,"../downloads",fileName);
+    try {
 
-    // Get video info first
+        const search = await YoutubeSearchApi.GetListByKeyword(
+            q,
+            false,
+            1
+        );
 
-const infoCommand = `yt-dlp --no-playlist --extractor-args "youtube:player_client=android,web" --default-search "ytsearch1" -j "${q}"`;    exec(infoCommand, (infoError, infoStdout)=>{
-
-        if(infoError){
+        if (!search.items.length) {
             return res.json({
                 success:false,
-                error:infoError.message
+                message:"Song not found"
             });
         }
 
-        let info;
+        const video = search.items[0];
 
-        try {
-            info = JSON.parse(infoStdout);
-        } catch(e){
-            return res.json({
-                success:false,
-                error:"Failed to read video info"
-            });
-        }
+        const videoUrl = `https://www.youtube.com/watch?v=${video.id}`;
+
+        const fileName = Date.now() + ".mp3";
+        const output = path.join(
+            __dirname,
+            "../downloads",
+            fileName
+        );
 
 
-        // Download MP3
+        const command = `yt-dlp --no-playlist -x --audio-format mp3 -o "${output}" "${videoUrl}"`;
 
-const downloadCommand = `yt-dlp --no-playlist --extractor-args "youtube:player_client=android,web" -x --audio-format mp3 -o "${output}" "${info.webpage_url}"`;        exec(downloadCommand, (error)=>{
+        exec(command, (error)=>{
 
             if(error){
                 return res.json({
@@ -53,26 +55,33 @@ const downloadCommand = `yt-dlp --no-playlist --extractor-args "youtube:player_c
                 });
             }
 
+
             if(!fs.existsSync(output)){
                 return res.json({
                     success:false,
-                    message:"Audio file not created"
+                    message:"Audio not created"
                 });
             }
 
 
             res.json({
                 success:true,
-                title:info.title,
-                artist:info.uploader,
-                thumbnail:info.thumbnail,
-                duration:info.duration_string,
-                audio:`http://localhost:3000/downloads/${fileName}`
+                title:video.title,
+                artist:"YouTube",
+                audio:`https://techx-api-79ow.onrender.com/downloads/${fileName}`
             });
 
         });
 
-    });
+
+    } catch(err){
+
+        res.json({
+            success:false,
+            error:err.message
+        });
+
+    }
 
 });
 
