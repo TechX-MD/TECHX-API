@@ -2,9 +2,13 @@ FROM node:20
 
 WORKDIR /app
 
-RUN apt update && apt install -y python3 python3-pip ffmpeg
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install yt-dlp
+RUN pip3 install --break-system-packages yt-dlp
 
 COPY package*.json ./
 
