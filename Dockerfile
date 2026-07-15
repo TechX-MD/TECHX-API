@@ -6,9 +6,16 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
+    curl \
+    unzip
 
 RUN pip3 install --break-system-packages -U yt-dlp
+
+RUN curl -fsSL https://deno.land/install.sh | sh
+
+ENV DENO_INSTALL="/root/.deno"
+ENV PATH="/root/.deno/bin:$PATH"
+
 COPY package*.json ./
 
 RUN npm install
