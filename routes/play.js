@@ -1,5 +1,7 @@
 const express = require("express");
-const axios = require("axios");
+const { exec } = require("child_process");
+const path = require("path");
+const fs = require("fs");
 
 const router = express.Router();
 
@@ -14,16 +16,24 @@ router.get("/", async (req,res)=>{
         });
     }
 
-    try {
+    const fileName = Date.now() + ".mp3";
+    const output = path.join(__dirname,"../downloads",fileName);
 
-        const response = await axios.get(
-            `https://api.popcat.xyz/ytmp3?url=${encodeURIComponent(q)}`
-        );
+    const command = `yt-dlp --js-runtimes deno --no-playlist -x --audio-format mp3 -o "${output}" "ytsearch1:${q}"`;
 
-        if(!response.data){
+    exec(command,(error)=>{
+
+        if(error){
             return res.json({
                 success:false,
-                message:"Song not found"
+                error:error.message
+            });
+        }
+
+        if(!fs.existsSync(output)){
+            return res.json({
+                success:false,
+                message:"Audio not created"
             });
         }
 
@@ -31,18 +41,10 @@ router.get("/", async (req,res)=>{
             success:true,
             title:q,
             artist:"Unknown",
-            audio:response.data.url
+            audio:`https://${req.get("host")}/downloads/${fileName}`
         });
 
-
-    } catch(err){
-
-        res.json({
-            success:false,
-            error:err.message
-        });
-
-    }
+    });
 
 });
 
