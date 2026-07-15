@@ -44,8 +44,7 @@ router.get("/", async (req, res) => {
         );
 
 
-        const command = `yt-dlp --no-playlist -x --audio-format mp3 -o "${output}" "${videoUrl}"`;
-
+const command = `yt-dlp --js-runtimes deno --no-playlist -x --audio-format mp3 -o "${output}" "${videoUrl}"`;
         exec(command, (error)=>{
 
             if(error){
