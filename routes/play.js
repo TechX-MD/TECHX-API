@@ -20,8 +20,8 @@ router.get("/", async (req,res)=>{
     const output = path.join(__dirname,"../downloads",fileName);
 
     // Get video info first
-const infoCommand = `yt-dlp --no-playlist --extractor-args "youtube:player_client=android" -j "ytsearch1:${q}"`;
-    exec(infoCommand, (infoError, infoStdout)=>{
+
+const infoCommand = `yt-dlp --no-playlist --extractor-args "youtube:player_client=android,web" --default-search "ytsearch1" -j "${q}"`;    exec(infoCommand, (infoError, infoStdout)=>{
 
         if(infoError){
             return res.json({
@@ -43,8 +43,8 @@ const infoCommand = `yt-dlp --no-playlist --extractor-args "youtube:player_clien
 
 
         // Download MP3
-const downloadCommand = `yt-dlp --no-playlist --extractor-args "youtube:player_client=android" -x --audio-format mp3 -o "${output}" "${info.webpage_url}"`;
-        exec(downloadCommand, (error)=>{
+
+const downloadCommand = `yt-dlp --no-playlist --extractor-args "youtube:player_client=android,web" -x --audio-format mp3 -o "${output}" "${info.webpage_url}"`;        exec(downloadCommand, (error)=>{
 
             if(error){
                 return res.json({
