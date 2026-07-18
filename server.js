@@ -25,7 +25,7 @@ app.use("/news", require("./routes/news"));
 app.use("/ytmp4", require("./routes/ytmp4"));
 app.use("/ytmp3", require("./routes/ytmp3"));
 app.use("/play", require("./routes/play"));
-
+app.use("/remini", require("./routes/remini"));
 app.use("/downloads", express.static("downloads"));
 app.use("/tiktok", require("./routes/tiktok"));
 app.use("/instagram", require("./routes/instagram"));
