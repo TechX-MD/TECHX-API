@@ -1,31 +1,48 @@
 const express = require("express");
 const router = express.Router();
 const ytdl = require("@distube/ytdl-core");
-router.get("/", async (req,res)=>{
+const fs = require("fs");
+const path = require("path");
+
+router.get("/", async (req, res) => {
 
     const url = req.query.url;
 
-    if(!url){
+    if (!url) {
         return res.json({
             success:false,
             message:"Use ?url=youtube_link"
         });
     }
 
-    try{
+    try {
 
         const info = await ytdl.getInfo(url);
 
-        res.json({
-            success:true,
-            title:info.videoDetails.title,
-            thumbnail:info.videoDetails.thumbnails.pop().url,
-            author:info.videoDetails.author.name,
-            message:"Video information ready",
-            url:url
+        const title = info.videoDetails.title
+        .replace(/[^a-zA-Z0-9]/g,"_");
+
+        const file =
+        path.join(
+            __dirname,
+            "../downloads",
+            title + ".mp4"
+        );
+
+
+
+ytdl(url, {
+    quality:"highest",
+    filter:"audioandvideo"
+})        .pipe(fs.createWriteStream(file))
+        .on("finish",()=>{
+
+            res.download(file, title+".mp4");
+
         });
 
-    }catch(err){
+
+    } catch(err){
 
         res.json({
             success:false,
@@ -37,3 +54,6 @@ router.get("/", async (req,res)=>{
 });
 
 module.exports = router;
+
+
+
