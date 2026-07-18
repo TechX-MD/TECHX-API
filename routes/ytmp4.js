@@ -8,8 +8,8 @@ router.get("/", async (req, res) => {
 
     if (!url) {
         return res.json({
-            success: false,
-            message: "Use ?url=youtube_link"
+            success:false,
+            message:"Use ?url=youtube_link"
         });
     }
 
@@ -17,24 +17,39 @@ router.get("/", async (req, res) => {
 
         const youtube = await Innertube.create();
 
-        const videoId = url.split("v=")[1] || url.split("/").pop();
+        const videoId = url.includes("v=")
+            ? url.split("v=")[1].split("&")[0]
+            : url.split("/").pop();
+
 
         const info = await youtube.getInfo(videoId);
 
-        res.json({
-            success: true,
-            title: info.basic_info.title,
-            author: info.basic_info.author,
-            message: "Video found",
-            url: url
+
+        res.setHeader(
+            "Content-Type",
+            "video/mp4"
+        );
+
+        res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="${videoId}.mp4"`
+        );
+
+
+        const stream = await youtube.download(videoId, {
+            type: "video+audio",
+            quality: "best"
         });
 
 
-    } catch (err) {
+        stream.pipe(res);
+
+
+    } catch(err){
 
         res.json({
             success:false,
-            error: err.message
+            error:err.message
         });
 
     }
