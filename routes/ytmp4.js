@@ -1,58 +1,52 @@
+
+
+
+
+
+
+
+
+
+
 const express = require("express");
 const router = express.Router();
-const { Innertube } = require("youtubei.js");
+const { exec } = require("child_process");
+const path = require("path");
 
-router.get("/", async (req, res) => {
+router.get("/", (req,res)=>{
 
     const url = req.query.url;
 
-    if (!url) {
+    if(!url){
         return res.json({
             success:false,
             message:"Use ?url=youtube_link"
         });
     }
 
-    try {
+    const file = path.join(
+        __dirname,
+        "../downloads/video.mp4"
+    );
 
-        const youtube = await Innertube.create();
-
-        const videoId = url.includes("v=")
-            ? url.split("v=")[1].split("&")[0]
-            : url.split("/").pop();
-
-
-        const info = await youtube.getInfo(videoId);
+    const command =
+    `yt-dlp --js-runtimes deno -f "bv*+ba/b" --merge-output-format mp4 -o "${file}" "${url}"`;
 
 
-        res.setHeader(
-            "Content-Type",
-            "video/mp4"
-        );
+    exec(command, (error, stdout, stderr)=>{
 
-        res.setHeader(
-            "Content-Disposition",
-            `attachment; filename="${videoId}.mp4"`
-        );
+        if(error){
+            console.log(stderr);
 
+            return res.json({
+                success:false,
+                error:stderr || error.message
+            });
+        }
 
-        const stream = await youtube.download(videoId, {
-            type: "video+audio",
-            quality: "best"
-        });
+        res.download(file);
 
-
-        stream.pipe(res);
-
-
-    } catch(err){
-
-        res.json({
-            success:false,
-            error:err.message
-        });
-
-    }
+    });
 
 });
 
