@@ -18,6 +18,7 @@
     "express": "^5.2.1",
     "qrcode": "^1.5.4",
     "youtube-search-api": "^2.0.1",
+    "youtubei.js": "^17.2.0",
     "yt-search": "^2.13.1"
   }
 }

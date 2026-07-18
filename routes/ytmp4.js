@@ -1,42 +1,43 @@
 const express = require("express");
 const router = express.Router();
-const { exec } = require("child_process");
-const path = require("path");
+const { Innertube } = require("youtubei.js");
 
-router.get("/", (req,res)=>{
+router.get("/", async (req, res) => {
 
     const url = req.query.url;
 
-    if(!url){
+    if (!url) {
         return res.json({
-            success:false,
-            message:"Use ?url=youtube_link"
+            success: false,
+            message: "Use ?url=youtube_link"
         });
     }
 
-    const file = path.join(
-        __dirname,
-        "../downloads/video.mp4"
-    );
+    try {
 
-    const command =
-    `yt-dlp -f "mp4" -o "${file}" "${url}"`;
-exec(command, (error, stdout, stderr)=>{
+        const youtube = await Innertube.create();
 
-    if(error){
-        console.log("YTDLP ERROR:", stderr);
+        const videoId = url.split("v=")[1] || url.split("/").pop();
 
-        return res.json({
-            success:false,
-            error:stderr || error.message
+        const info = await youtube.getInfo(videoId);
+
+        res.json({
+            success: true,
+            title: info.basic_info.title,
+            author: info.basic_info.author,
+            message: "Video found",
+            url: url
         });
+
+
+    } catch (err) {
+
+        res.json({
+            success:false,
+            error: err.message
+        });
+
     }
-
-    res.download(file);
-
-});
-
-
 
 });
 
