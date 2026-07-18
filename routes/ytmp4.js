@@ -21,21 +21,22 @@ router.get("/", (req,res)=>{
 
     const command =
     `yt-dlp -f "mp4" -o "${file}" "${url}"`;
+exec(command, (error, stdout, stderr)=>{
+
+    if(error){
+        console.log("YTDLP ERROR:", stderr);
+
+        return res.json({
+            success:false,
+            error:stderr || error.message
+        });
+    }
+
+    res.download(file);
+
+});
 
 
-    exec(command, (error)=>{
-
-        if(error){
-            return res.json({
-                success:false,
-                error:error.message
-            });
-        }
-
-
-        res.download(file);
-
-    });
 
 });
 
