@@ -1,0 +1,4 @@
+module.exports = {
+    GOOGLE_API_KEY: "YOUR_GOOGLE_API_KEY",
+    GOOGLE_CX: "YOUR_CUSTOM_SEARCH_ENGINE_ID"
+};
