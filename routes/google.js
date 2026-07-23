@@ -1,11 +1,12 @@
+
+
+
+
+
 const express = require("express");
 const axios = require("axios");
-const router = express.Router();
 
-const {
-    GOOGLE_API_KEY,
-    GOOGLE_CX
-} = require("../config");
+const router = express.Router();
 
 router.get("/", async (req, res) => {
 
@@ -13,45 +14,61 @@ router.get("/", async (req, res) => {
 
     if (!q) {
         return res.json({
-            success: false,
-            message: "Missing query parameter (?q=)"
+            success:false,
+            message:"Missing query parameter (?q=)"
         });
     }
 
     try {
 
         const response = await axios.get(
-            "https://www.googleapis.com/customsearch/v1",
+            "https://api.duckduckgo.com/",
             {
-                params: {
-                    key: GOOGLE_API_KEY,
-                    cx: GOOGLE_CX,
+                params:{
                     q,
-                    num: 5
+                    format:"json",
+                    no_html:1
                 }
             }
         );
 
-        const results = (response.data.items || []).map(item => ({
-            title: item.title,
-            link: item.link,
-            snippet: item.snippet
-        }));
+        const results = [];
+
+        if (response.data.AbstractText) {
+            results.push({
+                title: response.data.Heading,
+                link: response.data.AbstractURL,
+                snippet: response.data.AbstractText
+            });
+        }
+
+        response.data.RelatedTopics?.slice(0,5)
+        .forEach(item => {
+
+            if(item.Text){
+
+                results.push({
+                    title:item.Text.split(" - ")[0],
+                    link:item.FirstURL,
+                    snippet:item.Text
+                });
+
+            }
+
+        });
 
         res.json({
-            success: true,
-            developer: "Kelly",
-            query: q,
-            total: results.length,
+            success:true,
+            query:q,
             results
         });
 
-    } catch (err) {
+    } catch(err){
 
         res.json({
-            success: false,
-            message: "Google search failed.",
-            error: err.response?.data || err.message
+            success:false,
+            message:"Search failed",
+            error:err.message
         });
 
     }
