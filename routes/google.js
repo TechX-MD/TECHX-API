@@ -21,17 +21,17 @@ router.get("/", async (req, res) => {
 
     try {
 
-        const response = await axios.get(
-            "https://api.duckduckgo.com/",
-            {
-                params:{
-                    q,
-                    format:"json",
-                    no_html:1
-                }
-            }
-        );
-
+const response = await axios.get(
+    "https://api.duckduckgo.com/",
+    {
+        timeout: 10000,
+        params: {
+            q,
+            format: "json",
+            no_html: 1
+        }
+    }
+);
         const results = [];
 
         if (response.data.AbstractText) {
